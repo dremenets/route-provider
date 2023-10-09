@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RouteProvider.API.Services;
 
 namespace RouteProvider.API.Controllers;
 
@@ -6,9 +7,13 @@ namespace RouteProvider.API.Controllers;
 [Route("api/v1/[controller]")]
 public class PingController : ControllerBase
 {
-    [HttpGet]
-    public IActionResult Get()
+    private readonly ISearchService _searchService;
+
+    public PingController(ISearchService searchService)
     {
-        return Ok();
+        _searchService = searchService;
     }
+
+    [HttpGet]
+    public async Task<ActionResult> Get() => await _searchService.Ping() ? StatusCode(200) : StatusCode(500);
 }

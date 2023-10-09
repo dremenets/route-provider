@@ -1,11 +1,22 @@
+using RouteProvider.API;
+using RouteProvider.API.Providers;
+using RouteProvider.API.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
+builder.Services.Configure<ProviderSettingsConfiguration>(builder.Configuration.GetSection(nameof(ProviderSettingsConfiguration)));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IExternalProviderOne, ExternalProviderOne>();
+builder.Services.AddSingleton<IExternalProviderTwo, ExternalProviderTwo>();
+builder.Services.AddSingleton<ISearchService, SearchService>();
 
 var app = builder.Build();
 

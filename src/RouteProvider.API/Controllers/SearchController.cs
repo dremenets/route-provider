@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RouteProvider.API.Services;
 
 namespace RouteProvider.API.Controllers;
 
@@ -6,16 +7,16 @@ namespace RouteProvider.API.Controllers;
 [Route("api/v1/[controller]")]
 public class SearchController : ControllerBase
 {
-    private readonly ILogger<SearchController> _logger;
+    private readonly ISearchService _searchService;
 
-    public SearchController(ILogger<SearchController> logger)
+    public SearchController(ISearchService searchService)
     {
-        _logger = logger;
+        _searchService = searchService;
     }
 
     [HttpPost]
-    public Task<int> Post()
+    public Task<ActionResult> Post()
     {
-        return Task.FromResult(1);
+        throw new NotImplementedException();
     }
 }
