@@ -20,9 +20,6 @@ public class SearchController : ControllerBase
     public async Task<ActionResult<SearchResponse?>> Post([FromBody] SearchRequest request)
     {
         var result = await _searchService.GetRoute(request);
-        if (result == null)
-            return StatusCode(500);
-
         return Ok(result);
     }
 }

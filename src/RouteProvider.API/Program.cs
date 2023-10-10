@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 using RouteProvider.API;
 using RouteProvider.API.Mapping;
 using RouteProvider.API.Providers;
@@ -12,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.Configure<ProviderSettingsConfiguration>(builder.Configuration.GetSection(nameof(ProviderSettingsConfiguration)));
 builder.Services.AddSingleton(_ => new MapperConfiguration(cfg => cfg.AddProfile(new FiltersMappingProfile())).CreateMapper());
+builder.Services.AddMemoryCache();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -22,6 +25,9 @@ builder.Services.AddSingleton<IExternalProviderTwo, ExternalProviderTwo>();
 builder.Services.AddSingleton<ISearchService, SearchService>();
 
 var app = builder.Build();
+
+var cache = app.Services.GetRequiredService<IMemoryCache>();
+cache.Set(Constants.AllRoutesKeys, new ConcurrentBag<Guid>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

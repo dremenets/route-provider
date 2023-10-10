@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RouteProvider.API.Model.Requests;
 using RouteProvider.API.Model.Responses;
@@ -9,8 +10,9 @@ public sealed class ExternalProviderOne : ExternalProvider, IExternalProviderOne
 {
     private readonly string _url;
 
-    public ExternalProviderOne(IHttpClientFactory httpClientFactory, IOptions<ProviderSettingsConfiguration> options)
-        : base(httpClientFactory)
+    public ExternalProviderOne(IHttpClientFactory httpClientFactory, IOptions<ProviderSettingsConfiguration> options,
+        IMemoryCache memoryCache)
+        : base(httpClientFactory, memoryCache)
     {
         _url = options.Value.ProviderOneUrl;
     }
@@ -21,6 +23,10 @@ public sealed class ExternalProviderOne : ExternalProvider, IExternalProviderOne
     {
         var json = JsonSerializer.Serialize(request);
         var response = await Search(_url, json);
-        return await response.Content.ReadFromJsonAsync<ProviderOneSearchResponse>();
+        var result = await response.Content.ReadFromJsonAsync<ProviderOneSearchResponse>();
+
+        StoreToCache(result?.Route);
+
+        return result;
     }
 }
