@@ -1,4 +1,6 @@
+using AutoMapper;
 using RouteProvider.API;
+using RouteProvider.API.Mapping;
 using RouteProvider.API.Providers;
 using RouteProvider.API.Services;
 
@@ -9,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.Configure<ProviderSettingsConfiguration>(builder.Configuration.GetSection(nameof(ProviderSettingsConfiguration)));
+builder.Services.AddSingleton(_ => new MapperConfiguration(cfg => cfg.AddProfile(new FiltersMappingProfile())).CreateMapper());
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

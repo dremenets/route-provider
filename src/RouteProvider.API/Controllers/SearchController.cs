@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using RouteProvider.API.Model.Requests;
+using RouteProvider.API.Model.Responses;
 using RouteProvider.API.Services;
 
 namespace RouteProvider.API.Controllers;
@@ -15,8 +17,12 @@ public class SearchController : ControllerBase
     }
 
     [HttpPost]
-    public Task<ActionResult> Post()
+    public async Task<ActionResult<SearchResponse?>> Post([FromBody] SearchRequest request)
     {
-        throw new NotImplementedException();
+        var result = await _searchService.GetRoute(request);
+        if (result == null)
+            return StatusCode(500);
+
+        return Ok(result);
     }
 }

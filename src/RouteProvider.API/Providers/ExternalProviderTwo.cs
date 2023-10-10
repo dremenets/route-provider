@@ -1,6 +1,7 @@
+using System.Text.Json;
 using Microsoft.Extensions.Options;
-using RouteProvider.API.Providers.Requests;
-using RouteProvider.API.Providers.Responses;
+using RouteProvider.API.Model.Requests;
+using RouteProvider.API.Model.Responses;
 
 namespace RouteProvider.API.Providers;
 
@@ -16,8 +17,10 @@ public sealed class ExternalProviderTwo : ExternalProvider, IExternalProviderTwo
 
     public Task<bool> Ping() => Ping(_url);
 
-    public Task<ProviderTwoSearchResponse> GetRoute(ProviderTwoSearchRequest request)
+    public async Task<ProviderTwoSearchResponse?> GetRoute(ProviderTwoSearchRequest request)
     {
-        throw new NotImplementedException();
+        var json = JsonSerializer.Serialize(request);
+        var response = await Search(_url, json);
+        return await response.Content.ReadFromJsonAsync<ProviderTwoSearchResponse>();
     }
 }

@@ -1,10 +1,10 @@
-using RouteProvider.API.Services.Requests;
-using RouteProvider.API.Services.Responses;
+using RouteProvider.API.Model.Requests;
+using RouteProvider.API.Model.Responses;
 
 namespace RouteProvider.API.Services;
 
 public interface ISearchService
 {
     Task<bool> Ping();
-    Task<SearchResponse> GetRoute(SearchRequest request);
+    Task<SearchResponse?> GetRoute(SearchRequest request);
 }
