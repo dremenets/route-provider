@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RouteProvider.API.Model.Requests;
 using RouteProvider.API.Model.Responses;
+using RouteProvider.API.Services;
 
 namespace RouteProvider.API.Providers;
 
@@ -10,8 +10,8 @@ public sealed class ExternalProviderTwo : ExternalProvider, IExternalProviderTwo
 {
     private readonly string _url;
     
-    public ExternalProviderTwo(IHttpClientFactory httpClientFactory, IOptions<ProviderSettingsConfiguration> options, IMemoryCache memoryCache) :
-        base(httpClientFactory, memoryCache)
+    public ExternalProviderTwo(IHttpClientFactory httpClientFactory, IOptions<ProviderSettingsConfiguration> options, ICachedService cachedService) :
+        base(httpClientFactory, cachedService)
     {
         _url = options.Value.ProviderTwoUrl;
     }

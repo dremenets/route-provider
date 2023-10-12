@@ -1,11 +1,7 @@
-using System.Collections.Concurrent;
 using AutoMapper;
-using Microsoft.Extensions.Caching.Memory;
-using RouteProvider.API.Model;
 using RouteProvider.API.Model.Requests;
 using RouteProvider.API.Model.Responses;
 using RouteProvider.API.Providers;
-using Route = RouteProvider.API.Model.Route;
 
 namespace RouteProvider.API.Services;
 
@@ -15,19 +11,19 @@ public sealed class SearchService : ISearchService
     private readonly IExternalProviderOne _externalProviderOne;
     private readonly IExternalProviderTwo _externalProviderTwo;
     private readonly IMapper _mapper;
-    private readonly IMemoryCache _memoryCache;
+    private readonly ICachedService _cachedService;
 
     public SearchService(IExternalProviderOne externalProviderOne,
         IExternalProviderTwo externalProviderTwo,
         ILogger<SearchService> logger, 
-        IMapper mapper, 
-        IMemoryCache memoryCache)
+        IMapper mapper,
+        ICachedService cachedService)
     {
         _externalProviderOne = externalProviderOne;
         _externalProviderTwo = externalProviderTwo;
         _logger = logger;
         _mapper = mapper;
-        _memoryCache = memoryCache;
+        _cachedService = cachedService;
     }
 
     public async Task<bool> Ping()
@@ -38,9 +34,10 @@ public sealed class SearchService : ISearchService
             
             var isOneAlive = _externalProviderOne.Ping();
             var isTwoAlive = _externalProviderTwo.Ping();
-            var isOk = await isOneAlive &&
-                       await isTwoAlive;
-            return isOk;
+            
+            await Task.WhenAll(isOneAlive, isTwoAlive);
+            
+            return await isOneAlive && await isTwoAlive;
         }
         catch (Exception e)
         {
@@ -66,7 +63,10 @@ public sealed class SearchService : ISearchService
             
             if (request.Filters.OnlyCached)
             {
-                return GetCachedRoute(request.Filters);
+                return new SearchResponse
+                {
+                    Route = _cachedService.GetRoute(request.Filters)
+                };
             }
 
             var task1 = _externalProviderOne.GetRoute(_mapper.Map<ProviderOneSearchRequest>(request.Filters));
@@ -90,28 +90,5 @@ public sealed class SearchService : ISearchService
             _logger.LogError($"Error is during Search request: {e}");
             throw new InvalidOperationException("Failed to execute search");
         }
-    }
-
-    private SearchResponse? GetCachedRoute(Filter filter)
-    {
-        if (_memoryCache.TryGetValue(Constants.AllRoutesKeys, out ConcurrentBag<Guid>? collection))
-        {
-            foreach (var item in collection!.Distinct())
-            {
-                if (_memoryCache.TryGetValue(item, out Route? route))
-                {
-                    if (route?.StartAt >= filter.StartDate && route.EndAt <= filter.EndDate &&
-                        route.Price >= filter.MinPrice && route.Price <= filter.MaxPrice)
-                    {
-                        return new SearchResponse
-                        {
-                            Route = route
-                        };
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 }

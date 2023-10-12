@@ -1,8 +1,7 @@
-using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Mime;
 using System.Text;
-using Microsoft.Extensions.Caching.Memory;
+using RouteProvider.API.Services;
 using Route = RouteProvider.API.Model.Route;
 
 namespace RouteProvider.API.Providers;
@@ -10,12 +9,12 @@ namespace RouteProvider.API.Providers;
 public abstract class ExternalProvider
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IMemoryCache _memoryCache;
+    private readonly ICachedService _cachedService;
 
-    protected ExternalProvider(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache)
+    protected ExternalProvider(IHttpClientFactory httpClientFactory, ICachedService cachedService)
     {
         _httpClientFactory = httpClientFactory;
-        _memoryCache = memoryCache;
+        _cachedService = cachedService;
     }
 
     protected async Task<bool> Ping(string url)
@@ -40,17 +39,7 @@ public abstract class ExternalProvider
         return await client.PostAsync(uri, content);
     }
 
-    protected void StoreToCache(Route? route)
-    {
-        if (route != null)
-        {
-            _memoryCache.Set(route.Guid, route);
-            if (_memoryCache.TryGetValue(Constants.AllRoutesKeys, out ConcurrentBag<Guid>? collection))
-            {
-                collection?.Add(route.Guid);
-            }
-        }
-    }
+    protected void StoreToCache(Route? route) => _cachedService.SetRoute(route);
 
     private static void ThrowIfNullOrEmpty(string url)
     {

@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using AutoMapper;
-using Microsoft.Extensions.Caching.Memory;
 using RouteProvider.API;
 using RouteProvider.API.Mapping;
 using RouteProvider.API.Providers;
@@ -23,11 +21,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IExternalProviderOne, ExternalProviderOne>();
 builder.Services.AddSingleton<IExternalProviderTwo, ExternalProviderTwo>();
 builder.Services.AddSingleton<ISearchService, SearchService>();
+builder.Services.AddSingleton<ICachedService, CachedService>();
 
 var app = builder.Build();
-
-var cache = app.Services.GetRequiredService<IMemoryCache>();
-cache.Set(Constants.AllRoutesKeys, new ConcurrentBag<Guid>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,18 +1,19 @@
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RouteProvider.API.Model.Requests;
 using RouteProvider.API.Model.Responses;
+using RouteProvider.API.Services;
 
 namespace RouteProvider.API.Providers;
 
 public sealed class ExternalProviderOne : ExternalProvider, IExternalProviderOne
 {
     private readonly string _url;
+    
 
     public ExternalProviderOne(IHttpClientFactory httpClientFactory, IOptions<ProviderSettingsConfiguration> options,
-        IMemoryCache memoryCache)
-        : base(httpClientFactory, memoryCache)
+        ICachedService cachedService)
+        : base(httpClientFactory, cachedService)
     {
         _url = options.Value.ProviderOneUrl;
     }
